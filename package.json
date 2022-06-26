@@ -1,0 +1,36 @@
+{
+  "name": "ts-nc",
+  "version": "0.0.1",
+  "description": "typescript notification center",
+  "author": "xpwu",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "28.1.3",
+    "jest": "28.1.1",
+    "ts-jest": "28.0.5",
+    "typescript": "4.7.4"
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "test": "jest"
+  },
+  "keywords": [
+    "ts",
+    "typescript",
+    "notification"
+  ],
+  "license": "MIT",
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xpwu/ts-nc.git"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testRegex": "test/(.+)\\.test\\.(tsx?)$"
+  }
+}

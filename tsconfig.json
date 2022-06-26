@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "module": "ES6",
+    "lib": ["es2015", "es2017", "es2016", "dom"],
+    "target": "ES6",
+    "strict": true,
+    "alwaysStrict": true,
+    "pretty": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "noEmit": false,
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "noImplicitThis": true,
+    "allowJs": false,
+    "noImplicitAny": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "src",
+    "test"
+  ],
+  "exclude": ["node_modules/**/*"]
+}
