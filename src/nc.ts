@@ -1,4 +1,4 @@
-import {EventClass, NcEvent} from "./event"
+import {EventClass, NcEvent, EventSym} from "./event"
 
 class Observer {
   constructor(public num:number, public observer:symbol | null = null) {
@@ -20,6 +20,7 @@ export class NC {
 
   }
 
+  // EventClass: {sym:symbol}
   public addEvent<T, E extends NcEvent<T>>(event: EventClass<T,E>, clb: (e:E, removeIt:()=>void)=>void) {
     let n = ++this.num
 
@@ -30,9 +31,9 @@ export class NC {
     })
 
     let e = new event([])
-    let old = this.events.get(e.name()) || []
+    let old = this.events.get(EventSym(e)) || []
     old.push(new Observer(n))
-    this.events.set(e.name(), old)
+    this.events.set(EventSym(e), old)
   }
 
   public addObserver<T, E extends NcEvent<T>>(observer:symbol, event: EventClass<T,E>, clb: (e:E)=>void) {
@@ -43,9 +44,9 @@ export class NC {
     })
 
     let e = new event([])
-    let old = this.events.get(e.name()) || []
+    let old = this.events.get(EventSym(e)) || []
     old.push(new Observer(n, observer))
-    this.events.set(e.name(), old)
+    this.events.set(EventSym(e), old)
 
     let oldO = this.observers.get(observer) || []
     oldO.push(n)
@@ -54,7 +55,7 @@ export class NC {
 
   public removeEvent<T, E extends NcEvent<T>>(observer:symbol, event: EventClass<T,E>) {
     let e = new event([])
-    let es = this.events.get(e.name()) || []
+    let es = this.events.get(EventSym(e)) || []
     for (let ee of es) {
       if (ee.observer !== observer) {
         continue
@@ -74,7 +75,15 @@ export class NC {
   public post<T, E extends NcEvent<T>>(e: E) {
     let delIndex = new Map<number, boolean>()
 
-    let es = this.events.get(e.name()) || []
+    try {
+      EventSym(e)
+    }catch (exception) {
+      // Event is worry
+      console.error(exception)
+      return
+    }
+
+    let es = this.events.get(EventSym(e)) || []
     for (let i = 0; i < es.length; i++) {
       let ef = this.clbs.get(es[i].num)
       if (ef === undefined) {
@@ -97,6 +106,6 @@ export class NC {
 
       newEs.push(es[i])
     }
-    this.events.set(e.name(), newEs)
+    this.events.set(EventSym(e), newEs)
   }
 }

@@ -1,3 +1,3 @@
 
 export * from "./nc"
-export * from "./event"
+export {NewEventClass, NcEvent} from "./event"

@@ -1,22 +1,31 @@
 
 
-import {NC, NcEvent} from "../src"
+import {NC, NcEvent, NewEventClass} from "../src"
+import {EventSym} from "../src/event"
 
 class TEvent extends NcEvent<string> {
   static sym = Symbol()
-
-  name(): symbol {
-    return TEvent.sym;
-  }
 }
 
-class T2Event extends NcEvent<string> {
+const DemoEvent = NewEventClass<number>()
+const DemoEvent2 = NewEventClass<number>()
+
+class T2Event extends TEvent {
   static sym = Symbol()
-
-  name(): symbol {
-    return T2Event.sym;
-  }
 }
+
+test("test-name", ()=>{
+  let e1 = new DemoEvent([1])
+  let e2 = new DemoEvent2([])
+  let e3 = new TEvent(["e3"])
+
+  expect(EventSym(e1)).not.toEqual(EventSym(e2))
+  expect(EventSym(e1)).not.toEqual(EventSym(e3))
+  expect(EventSym(e2)).not.toEqual(EventSym(e3))
+  expect(EventSym(e2)).toEqual(EventSym(e2))
+  expect(EventSym(e1)).toEqual(EventSym(e1))
+  expect(EventSym(e3)).toEqual(EventSym(e3))
+})
 
 let nc:NC = NC.default
 
@@ -32,6 +41,9 @@ test("new NC", ()=>{
 test("addEvent", ()=>{
   expect.assertions(1)
   nc.addEvent(TEvent, e =>{
+    expect(e.ids).toEqual(["addEvent"])
+  })
+  nc.addEvent(DemoEvent, e =>{
     expect(e.ids).toEqual(["addEvent"])
   })
   nc.addEvent(T2Event, (e)=>{
