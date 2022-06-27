@@ -29,7 +29,7 @@ export function EventSym<T, E extends NcEvent<T>>(e: E): symbol|never {
 
 let logEvent = 0
 export function NewEventClass<T>() {
-  return class newEvent extends NcEvent<T>{
+  return class extends NcEvent<T>{
     static sym = Symbol(++logEvent)
   }
 }
