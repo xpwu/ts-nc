@@ -14,7 +14,7 @@ class T2Event extends TEvent {
   static sym = Symbol()
 }
 
-test("test-name", ()=>{
+test("test-sym", ()=>{
   let e1 = new DemoEvent([1])
   let e2 = new DemoEvent2([])
   let e3 = new TEvent(["e3"])
