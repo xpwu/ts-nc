@@ -11,7 +11,7 @@ const DemoEvent = NewEventClass<number>()
 const DemoEvent2 = NewEventClass<number>()
 
 class T2Event extends TEvent {
-  static sym = Symbol()
+  static readonly sym = Symbol()
 }
 
 test("test-sym", ()=>{
