@@ -105,7 +105,7 @@ test("add", async ()=>{
 })
 
 
-test("add&rm", async ()=>{
+test("add&rm&async", async ()=>{
   expect.assertions(3)
   nc.addEvent(TEvent, async (e, rm)=>{
     rm()
@@ -117,7 +117,8 @@ test("add&rm", async ()=>{
   })
 
   let sym = Symbol()
-  nc.addObserver(sym, TEvent, e => {
+  nc.addObserver(sym, TEvent, async e => {
+    await aFun()
     expect(e.ids).toEqual(["addEvent"])
   })
 
