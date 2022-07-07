@@ -84,7 +84,7 @@ test("addEvent&async", async ()=>{
 
 test("add", async ()=>{
   expect.assertions(6)
-  nc.addEvent(TEvent, async (e, rm)=>{
+  nc.addEvent(TEvent, async (e)=>{
     await aFun()
     expect(e.ids).toEqual(["addEvent"])
   })
