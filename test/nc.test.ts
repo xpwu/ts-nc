@@ -52,7 +52,7 @@ test("addEvent", ()=>{
   nc.post(new TEvent(["addEvent"]))
 })
 
-test("addEvent&remove", ()=>{
+test("addEvent&remove", async ()=>{
   expect.assertions(1)
   nc.addEvent(TEvent, (e, rm)=>{
     expect(e.ids).toEqual(["addEvent"])
@@ -61,8 +61,8 @@ test("addEvent&remove", ()=>{
   nc.addEvent(T2Event, (e)=>{
     expect(e.ids).toEqual(["addEvent2"])
   })
-  nc.post(new TEvent(["addEvent"]))
-  nc.post(new TEvent(["addEvent2"]))
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent2"]))
 })
 
 async function aFun(): Promise<string> {return ""}
@@ -77,9 +77,9 @@ test("addEvent&async", async ()=>{
   nc.addEvent(T2Event, (e)=>{
     expect(e.ids).toEqual(["addEvent2"])
   })
-  nc.post(new TEvent(["addEvent"]))
-  nc.post(new TEvent(["addEvent0"]))
-  nc.post(new T2Event(["addEvent2"]))
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent0"]))
+  await nc.post(new T2Event(["addEvent2"]))
 })
 
 test("add", async ()=>{
@@ -100,8 +100,8 @@ test("add", async ()=>{
     expect(e.ids).toEqual(["addEvent"])
   })
 
-  nc.post(new TEvent(["addEvent"]))
-  nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
 })
 
 
@@ -122,7 +122,7 @@ test("add&rm&async", async ()=>{
     expect(e.ids).toEqual(["addEvent"])
   })
 
-  nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
 
   nc.removeAll(sym)
   nc.removeAll(sym)
@@ -131,7 +131,7 @@ test("add&rm&async", async ()=>{
   nc.removeAll(sym)
   nc.removeEvent(sym, TEvent)
 
-  nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
 
   nc.removeAll(sym)
   nc.removeAll(sym)
@@ -140,7 +140,7 @@ test("add&rm&async", async ()=>{
   nc.removeAll(sym)
   nc.removeEvent(sym, TEvent)
 
-  nc.post(new T2Event(["addEvent2"]))
+  await nc.post(new T2Event(["addEvent2"]))
 })
 
 test("rm&post", async ()=>{
@@ -163,8 +163,8 @@ test("rm&post", async ()=>{
 
   nc.removeEvent(sym, T2Event)
 
-  nc.post(new TEvent(["addEvent"]))
-  nc.post(new TEvent(["addEvent"]))
-  nc.post(new T2Event(["addEvent2"]))
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new T2Event(["addEvent2"]))
 })
 
