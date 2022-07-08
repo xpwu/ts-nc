@@ -38,7 +38,7 @@ export function NewEventClass<T>() {
 // the DemoEvent1 and the DemoEvent2 are different !
 export const DemoEvent1 = NewEventClass<string>()
 
-export const DemoEvent2 = NewEventClass<string>()
+export class DemoEvent2 extends NewEventClass<string>(){}
 
 export class DemoEvent3 extends NcEvent<string>{
   static readonly sym = Symbol()
