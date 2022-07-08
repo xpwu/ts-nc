@@ -72,7 +72,7 @@ export class NC {
     }
   }
 
-  public post<T, E extends NcEvent<T>>(e: E) {
+  public async post<T, E extends NcEvent<T>>(e: E) {
     let delIndex = new Map<number, boolean>()
 
     try {
@@ -84,6 +84,7 @@ export class NC {
     }
 
     let es = this.events.get(EventSym(e)) || []
+    let all = []
     for (let i = 0; i < es.length; i++) {
       let ef = this.clbs.get(es[i].num)
       if (ef === undefined) {
@@ -91,8 +92,9 @@ export class NC {
         continue
       }
 
-      ef(e)
+      all.push(ef(e))
     }
+    await Promise.all(all)
 
     if (delIndex.size <= es.length/3 || es.length === 0) {
       return
