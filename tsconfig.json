@@ -6,6 +6,7 @@
 
     "outDir": "dist",
     "sourceMap": true,
+    "noEmit": false,
 
     "lib": ["es2015", "es2017", "es2016", "dom"],
     "experimentalDecorators": true,
@@ -16,7 +17,6 @@
 
     "strict": true,
 
-    "noEmit": false,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
