@@ -1,6 +1,6 @@
 
 
-import {NC, NcEvent, NewEventClass} from "../src"
+import {NC, NcEvent, NewEventClass} from "../index"
 import {EventSym} from "../src/event"
 
 class TEvent extends NcEvent<string> {
