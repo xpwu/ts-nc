@@ -12,7 +12,7 @@ export class NC {
 
   private observers = new Map<symbol, number[]>()
 
-  private clbs: Map<number, (e:any)=>void> = new Map<number, (e:any)=>void>()
+  private clbs: Map<number, (e:any)=>unknown> = new Map<number, (e:any)=>unknown>()
 
   private events: Map<symbol, Observer[]> = new Map<symbol, Observer[]>()
 
@@ -24,8 +24,8 @@ export class NC {
   public addEvent<T, E extends NcEvent<T>>(event: EventClass<T,E>, clb: (e:E, removeIt:()=>void)=>void) {
     let n = ++this.num
 
-    this.clbs.set(n, (e:any)=>{
-      clb(e as E, ()=>{
+    this.clbs.set(n, async (e: any) => {
+      await clb(e as E, () => {
         this.clbs.delete(n)
       })
     })
@@ -39,8 +39,8 @@ export class NC {
   public addObserver<T, E extends NcEvent<T>>(observer:symbol, event: EventClass<T,E>, clb: (e:E)=>void) {
     let n = ++this.num
 
-    this.clbs.set(n, (e:any)=>{
-      clb(e as E)
+    this.clbs.set(n, async (e: any) => {
+      await clb(e as E)
     })
 
     let e = new event([])

@@ -67,6 +67,14 @@ test("addEvent&remove", async ()=>{
 
 async function aFun(): Promise<string> {return ""}
 
+async function aFun2(): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(()=>{
+      resolve()
+    }, 1000)
+  })
+}
+
 test("addEvent&async", async ()=>{
   expect.assertions(2)
   nc.addEvent(TEvent, async (e, rm)=>{
@@ -102,6 +110,31 @@ test("add", async ()=>{
 
   await nc.post(new TEvent(["addEvent"]))
   await nc.post(new TEvent(["addEvent"]))
+})
+
+test("addMore", ()=>{
+  expect.assertions(8)
+  nc.addEvent(TEvent, (e)=>{
+    expect(e.ids).toEqual(["addEvent"])
+  })
+  nc.addEvent(TEvent, (e)=>{
+    expect(e.ids).toEqual(["addEvent"])
+  })
+  nc.addEvent(TEvent,  (e)=>{
+    expect(e.ids).toEqual(["addEvent"])
+  })
+
+  nc.post(new TEvent(["addEvent"]))
+
+  let sym = Symbol()
+  nc.addObserver(sym, TEvent, e => {
+    expect(e.ids).toEqual(["addEvent"])
+  })
+  nc.addObserver(sym, TEvent, e => {
+    expect(e.ids).toEqual(["addEvent"])
+  })
+
+  nc.post(new TEvent(["addEvent"]))
 })
 
 
@@ -141,6 +174,28 @@ test("add&rm&async", async ()=>{
   nc.removeEvent(sym, TEvent)
 
   await nc.post(new T2Event(["addEvent2"]))
+})
+
+test("add&rm&async-2", async ()=>{
+  expect.assertions(5)
+  nc.addEvent(TEvent, async (e, rm)=>{
+    rm()
+    await aFun2()
+    expect(e.ids).toEqual(["addEvent"])
+  })
+
+  nc.addEvent(TEvent, (e)=>{
+    expect(e.ids).toEqual(["addEvent"])
+  })
+
+  let sym = Symbol()
+  nc.addObserver(sym, TEvent, async e => {
+    await aFun2()
+    expect(e.ids).toEqual(["addEvent"])
+  })
+
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
 })
 
 test("rm&post", async ()=>{
