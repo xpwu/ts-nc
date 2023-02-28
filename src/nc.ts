@@ -84,7 +84,7 @@ export class NC {
     }
 
     let es = this.events.get(EventSym(e)) || []
-    let all = []
+    let allEf = []
     for (let i = 0; i < es.length; i++) {
       let ef = this.clbs.get(es[i].num)
       if (ef === undefined) {
@@ -92,6 +92,12 @@ export class NC {
         continue
       }
 
+      allEf.push(ef)
+    }
+
+    // 为了防止在执行事件回调时，添加/删除事件对events队列的影响，所以不在events的循环中执行事件函数，而单独执行
+    let all = []
+    for (let ef of allEf) {
       all.push(ef(e))
     }
     await Promise.all(all)

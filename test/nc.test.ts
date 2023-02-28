@@ -223,3 +223,27 @@ test("rm&post", async ()=>{
   await nc.post(new T2Event(["addEvent2"]))
 })
 
+test("post&add&rm", async ()=>{
+  expect.assertions(5)
+  nc.addEvent(TEvent, async (e, rm)=>{
+    rm()
+    await aFun()
+    expect(e.ids).toEqual(["addEvent"])
+  })
+  nc.addEvent(T2Event, (e)=>{
+    expect(e.ids).toEqual(["addEvent2"])
+  })
+
+  let sym = Symbol()
+  nc.addObserver(sym, TEvent, e => {
+    expect(e.ids).toEqual(["addEvent"])
+    nc.addObserver(sym, TEvent, e=>{
+      expect(e.ids).toEqual(["addEvent"])
+    })
+  })
+
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new TEvent(["addEvent"]))
+  await nc.post(new T2Event(["addEvent2"]))
+})
+
