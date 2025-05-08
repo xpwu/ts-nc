@@ -1,46 +1,31 @@
 
-interface Sym {
-  sym:symbol
+export interface NCEventConstructor<E> {
+  readonly nameSym: symbol
+  new(...args: any): E
 }
 
-export interface EventClass<T, E extends NcEvent<T>> extends Sym{
-  new(ids: T[]): E
+export interface NCEvent {
+  readonly nameSym: symbol
 }
 
-export class NcEvent<T> {
-  // static sym = Symbol()
-
-  constructor (ids: T[]) {
-    this.ids = ids
-  }
-
-  public readonly ids: T[]
-}
-
-// not export in index.ts
-export function EventSym<T, E extends NcEvent<T>>(e: E): symbol|never {
-  let ret = (e.constructor as any as Sym).sym
-  if (ret === undefined) {
-    throw new Error("please add 'static sym = Symbol()' in every event class")
-  }
-
-  return ret
-}
-
-let logEvent = 0
-export function NewEventClass<T>() {
-  return class extends NcEvent<T>{
-    static readonly sym = Symbol(++logEvent)
+export function MixinsNCEvent<TBase extends {new (...args: any[]):{} }>(Base: TBase, logName = "") {
+  return class Event extends Base implements NCEvent {
+    public static readonly nameSym = Symbol(logName)
+    public get nameSym(): symbol {
+      return Event.nameSym
+    }
   }
 }
 
-
-// the DemoEvent1 and the DemoEvent2 are different !
-export const DemoEvent1 = NewEventClass<string>()
-
-export class DemoEvent2 extends NewEventClass<string>(){}
-
-export class DemoEvent3 extends NcEvent<string>{
-  static readonly sym = Symbol()
+export class NCEventBase<T>{
+  constructor (public readonly ids: T[] = []) {
+  }
 }
+
+export function CreateNCEvent<T = string>(logName = "") {
+  return MixinsNCEvent(NCEventBase<T>, logName)
+}
+
+// export const DemoEvent = CreateNCEvent()
+// export const DemoEvent2 = CreateNCEvent<number>()
 

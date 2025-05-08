@@ -1,119 +1,78 @@
-import {EventClass, NcEvent, EventSym} from "./event"
+import {NCEventConstructor, NCEvent} from "./event"
 
-class Observer {
-  constructor(public num:number, public observer:symbol | null = null) {
+export interface NCObserverItem {
+  remove(): void
+}
+
+class NCItem<T> implements NCObserverItem {
+  private readonly id: number
+  private readonly queue: Queue<T>
+
+  remove(): void {
+    this.queue.remove(this.id)
+  }
+
+  constructor(queue: Queue<T>, id: number) {
+    this.id = id
+    this.queue = queue
+  }
+}
+
+class Queue<T> {
+  private readonly blocks = new Map<number, (e: T) => Promise<void>|void>()
+  private id = 0
+
+  public async post(e: T) {
+    // 为了防止在执行事件回调时，添加/删除事件对events队列的影响，所以不在events的循环中执行事件函数，而单独执行
+
+    let all = []
+    for (let [_, v] of this.blocks) {
+      all.push(v)
+    }
+
+    let allPromise = []
+    for (let v of all) {
+      allPromise.push(v(e))
+    }
+
+    await Promise.all(allPromise)
+  }
+
+  public add(block: (e: T) => Promise<void>|void) : NCObserverItem {
+    this.id++
+    this.blocks.set(this.id, block)
+    return new NCItem(this, this.id)
+  }
+
+  public remove(id: number) {
+    this.blocks.delete(id)
   }
 }
 
 export class NC {
-  static readonly default = new NC("default")
 
-  private num:number = 0
+  private readonly events = new Map<symbol, Queue<any>>()
 
-  private observers = new Map<symbol, number[]>()
-
-  private clbs: Map<number, (e:any)=>unknown> = new Map<number, (e:any)=>unknown>()
-
-  private events: Map<symbol, Observer[]> = new Map<symbol, Observer[]>()
-
-  constructor(public readonly logName: string) {
+  constructor(public readonly logName: string = "nc") {
 
   }
 
-  // EventClass: {sym:symbol}
-  public addEvent<T, E extends NcEvent<T>>(event: EventClass<T,E>, clb: (e:E, removeIt:()=>void)=>void) {
-    let n = ++this.num
-
-    this.clbs.set(n, async (e: any) => {
-      await clb(e as E, () => {
-        this.clbs.delete(n)
-      })
-    })
-
-    let e = new event([])
-    let old = this.events.get(EventSym(e)) || []
-    old.push(new Observer(n))
-    this.events.set(EventSym(e), old)
-  }
-
-  public addObserver<T, E extends NcEvent<T>>(observer:symbol, event: EventClass<T,E>, clb: (e:E)=>void) {
-    let n = ++this.num
-
-    this.clbs.set(n, async (e: any) => {
-      await clb(e as E)
-    })
-
-    let e = new event([])
-    let old = this.events.get(EventSym(e)) || []
-    old.push(new Observer(n, observer))
-    this.events.set(EventSym(e), old)
-
-    let oldO = this.observers.get(observer) || []
-    oldO.push(n)
-    this.observers.set(observer, oldO)
-  }
-
-  public removeEvent<T, E extends NcEvent<T>>(observer:symbol, event: EventClass<T,E>) {
-    let e = new event([])
-    let es = this.events.get(EventSym(e)) || []
-    for (let ee of es) {
-      if (ee.observer !== observer) {
-        continue
-      }
-
-      this.clbs.delete(ee.num)
+  public addEvent<T extends NCEvent>(e: NCEventConstructor<T>, block: (e: T) => void|Promise<void>): NCObserverItem {
+    let v = this.events.get(e.nameSym)
+    if (v === undefined) {
+      v = new Queue<T>()
+      this.events.set(e.nameSym, v)
     }
+
+    return v.add(block)
   }
 
-  public removeAll(observer:symbol) {
-    let os = this.observers.get(observer) || []
-    for (let o of os) {
-      this.clbs.delete(o)
-    }
-  }
-
-  public async post<T, E extends NcEvent<T>>(e: E) {
-    let delIndex = new Map<number, boolean>()
-
-    try {
-      EventSym(e)
-    }catch (exception) {
-      // Event is worry
-      console.error(exception)
+  public async post<T extends NCEvent>(e: T) {
+    let q = this.events.get(e.nameSym)
+    if (q === undefined) {
       return
     }
 
-    let es = this.events.get(EventSym(e)) || []
-    let allEf = []
-    for (let i = 0; i < es.length; i++) {
-      let ef = this.clbs.get(es[i].num)
-      if (ef === undefined) {
-        delIndex.set(i, true)
-        continue
-      }
-
-      allEf.push(ef)
-    }
-
-    // 为了防止在执行事件回调时，添加/删除事件对events队列的影响，所以不在events的循环中执行事件函数，而单独执行
-    let all = []
-    for (let ef of allEf) {
-      all.push(ef(e))
-    }
-    await Promise.all(all)
-
-    if (delIndex.size <= es.length/3 || es.length === 0) {
-      return
-    }
-
-    let newEs: Observer[] = []
-    for (let i = 0; i < es.length; i++) {
-      if (delIndex.get(i) === true) {
-        continue
-      }
-
-      newEs.push(es[i])
-    }
-    this.events.set(EventSym(e), newEs)
+    await q.post(e)
   }
 }
