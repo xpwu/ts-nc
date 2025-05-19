@@ -8,7 +8,10 @@ export interface NCEvent {
   readonly nameSym: symbol
 }
 
-export function MixinsNCEvent<TBase extends {new (...args: any[]):{} }>(Base: TBase, logName = "") {
+export function MixinsNCEvent<TBase extends {new(...args: any[]):any}>(Base: TBase, logName = "")
+// or NCEventConstructor<NCEvent> & TBase
+  : NCEventConstructor<NCEvent & InstanceType<TBase> > {
+
   return class Event extends Base implements NCEvent {
     public static readonly nameSym = Symbol(logName)
     public get nameSym(): symbol {
@@ -18,14 +21,16 @@ export function MixinsNCEvent<TBase extends {new (...args: any[]):{} }>(Base: TB
 }
 
 export class NCEventBase<T>{
-  constructor (public readonly ids: T[] = []) {
+  public readonly ids: T[]
+  constructor (ids: T[] = []) {
+    this.ids = ids
   }
 }
 
-export function CreateNCEvent<T = string>(logName = "") {
+export function CreateNCEvent<T = string>(logName = ""): NCEventConstructor<NCEvent & NCEventBase<T>> {
   return MixinsNCEvent(NCEventBase<T>, logName)
 }
 
-// export const DemoEvent = CreateNCEvent()
-// export const DemoEvent2 = CreateNCEvent<number>()
+// const DemoEvent = CreateNCEvent()
+// const DemoEvent2 = CreateNCEvent<number>()
 
