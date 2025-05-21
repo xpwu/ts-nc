@@ -7,27 +7,50 @@ export interface NCObserverItem {
 class NCItem<T> implements NCObserverItem {
   private readonly id: number
   private readonly queue: Queue<T>
+	block: (e: T) => Promise<void>|void
 
   remove(): void {
     this.queue.remove(this.id)
+		// 释放引用
+		this.block = ()=>{}
   }
 
-  constructor(queue: Queue<T>, id: number) {
+  constructor(queue: Queue<T>, id: number, block: (e: T) => Promise<void>|void) {
     this.id = id
     this.queue = queue
+		this.block = block
   }
 }
 
+const WeakRef = (globalThis && globalThis.WeakRef) || class<T> {
+	[Symbol.toStringTag]: "WeakRef" = "WeakRef"
+
+	target: T
+	constructor(target: T) {
+		this.target = target
+	}
+
+	deref(): T | undefined {
+		return this.target
+	}
+}
+
 class Queue<T> {
-  private readonly blocks = new Map<number, (e: T) => Promise<void>|void>()
+  private readonly items = new Map<number, WeakRef<NCItem<T>>>()
   private id = 0
 
   public async post(e: T) {
     // 为了防止在执行事件回调时，添加/删除事件对events队列的影响，所以不在events的循环中执行事件函数，而单独执行
 
     let all = []
-    for (let [_, v] of this.blocks) {
-      all.push(v)
+		let del = []
+    for (let [id, v] of this.items) {
+			let item = v.deref()
+			if (item === undefined) {
+				del.push(id)
+				continue
+			}
+      all.push(item.block)
     }
 
     let allPromise = []
@@ -36,16 +59,21 @@ class Queue<T> {
     }
 
     await Promise.all(allPromise)
+
+		for (let id of del) {
+			this.items.delete(id)
+		}
   }
 
   public add(block: (e: T) => Promise<void>|void) : NCObserverItem {
     this.id++
-    this.blocks.set(this.id, block)
-    return new NCItem(this, this.id)
+		let item = new NCItem(this, this.id, block)
+    this.items.set(this.id, new WeakRef(item))
+    return item
   }
 
   public remove(id: number) {
-    this.blocks.delete(id)
+    this.items.delete(id)
   }
 }
 
